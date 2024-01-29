@@ -1,5 +1,8 @@
 import {
-    ViewerApp,
+    CoreEditorApp,
+    addEditorPlugins,
+    PresetLibraryPlugin,
+    defaultPresets,
     AssetManagerPlugin,
     GBufferPlugin,
     timeout,
@@ -19,7 +22,7 @@ import {
     addBasePlugins,
     ITexture, TweakpaneUiPlugin, AssetManagerBasicPopupPlugin, CanvasSnipperPlugin,
 
-    IViewerPlugin, FileTransferPlugin,
+    IViewerPlugin, FileTransferPlugin, HierarchyUiPlugin,
 
     // Color, // Import THREE.js internals
     // Texture, // Import THREE.js internals
@@ -29,12 +32,12 @@ import "./styles.css";
 async function setupViewer(){
 
     // Initialize the viewer
-    const viewer = new ViewerApp({
+    const editor = new CoreEditorApp({
         canvas: document.getElementById('webgi-canvas') as HTMLCanvasElement,
     })
 
     // Add plugins individually.
-    // await viewer.addPlugin(GBufferPlugin)
+    await editor.addPlugin(GBufferPlugin)
     // await viewer.addPlugin(new ProgressivePlugin(32))
     // await viewer.addPlugin(new TonemapPlugin(!viewer.useRgbm))
     // await viewer.addPlugin(GammaCorrectionPlugin)
@@ -49,28 +52,52 @@ async function setupViewer(){
     // await viewer.addPlugin(AnisotropyPlugin)
     // and many more...
 
+    await addEditorPlugins(editor, {
+        caching: true,
+        ground: true,
+        bloom: true,
+        depthTonemap: true,
+        enableDrop: true,
+        importPopup: false,
+        debug: false
+      });
+      
+    console.log(defaultPresets);
+    
     // or use this to add all main ones at once.
-    await addBasePlugins(viewer) // check the source: https://codepen.io/repalash/pen/JjLxGmy for the list of plugins added.
+   // await addBasePlugins(editor) // check the source: https://codepen.io/repalash/pen/JjLxGmy for the list of plugins added.
 
     // Add a popup(in HTML) with download progress when any asset is downloading.
-    await viewer.addPlugin(AssetManagerBasicPopupPlugin)
+  //  await editor.addPlugin(AssetManagerBasicPopupPlugin)
 
     // Required for downloading files from the UI
-    await viewer.addPlugin(FileTransferPlugin)
+    await editor.addPlugin(FileTransferPlugin)
 
     // Add more plugins not available in base, like CanvasSnipperPlugin which has helpers to download an image of the canvas.
-    await viewer.addPlugin(CanvasSnipperPlugin)
+    await editor.addPlugin(CanvasSnipperPlugin)
 
     // Import and add a GLB file.
-    await viewer.load("./assets/classic-watch.glb")
+  //  await editor.load("./assets/classic-watch.glb")
 
     // Load an environment map if not set in the glb file
-    // await viewer.setEnvironmentMap("./assets/environment.hdr");
+    await editor.setEnvironmentMap("./assets/environment.hdr");
+
+    //await editor.setupUi();
 
     // Add some UI for tweak and testing.
-    const uiPlugin = await viewer.addPlugin(TweakpaneUiPlugin)
+    const uiPlugin = await editor.addPlugin(TweakpaneUiPlugin)
     // Add plugins to the UI to see their settings.
-    uiPlugin.setupPlugins<IViewerPlugin>(TonemapPlugin, CanvasSnipperPlugin)
+    // uiPlugin.setupPlugins<IViewerPlugin>(TonemapPlugin, CanvasSnipperPlugin, HierarchyUiPlugin)
+
+    const presets = { ...defaultPresets };
+    for (const i of [...Object.keys(presets)]) {
+      presets[i] = presets[i].slice(0, 2);
+    }
+  
+    const presetLib = editor.getPlugin(PresetLibraryPlugin);
+    await presetLib.loadPresetGroups(presets);
+  
+    
 
 }
 
