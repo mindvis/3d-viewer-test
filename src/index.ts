@@ -26,7 +26,7 @@ import {
 
     // Color, // Import THREE.js internals
     // Texture, // Import THREE.js internals
-} from "webgi";
+} from "https://dist.pixotronics.com/webgi/runtime/bundle-0.9.1.mjs";
 import "./styles.css";
 
 async function setupViewer(){
@@ -82,7 +82,7 @@ async function setupViewer(){
     // Load an environment map if not set in the glb file
     await editor.setEnvironmentMap("./assets/environment.hdr");
 
-    //await editor.setupUi();
+    await editor.setupUi();
 
     // Add some UI for tweak and testing.
     const uiPlugin = await editor.addPlugin(TweakpaneUiPlugin)
